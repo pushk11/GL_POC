@@ -22214,7 +22214,7 @@
 							{ className: 'col-sm-4 hide', id: 'memoForm' },
 							_react2.default.createElement(
 								'div',
-								{ className: this.state.title.length == 0 && this.state.error.length > 0 ? 'alert alert-warning' : 'hide' },
+								{ className: this.state.title.length == 0 && this.state.error.length > 0 ? 'alert alert-warning clear' : 'hide clear' },
 								this.state.error
 							),
 							_react2.default.createElement(

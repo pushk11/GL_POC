@@ -173,7 +173,7 @@ class Ideas extends React.Component {
     				<button className="btn btn-xs btn-default clear" onClick={this.addIt} id="addBtn">Add</button>
     			</div>
     			<div className="col-sm-4 hide" id="memoForm">
-    			    <div className={( this.state.title.length == 0 && this.state.error.length > 0) ? 'alert alert-warning' : 'hide'} >{this.state.error}</div>
+    			    <div className={( this.state.title.length == 0 && this.state.error.length > 0) ? 'alert alert-warning clear' : 'hide clear'} >{this.state.error}</div>
     				<div className="form-group">
     				  <input type="hidden" id="id" ref="id" value={this.state.id} />
 					  <label for="title">Title:</label>
