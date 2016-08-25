@@ -22030,7 +22030,7 @@
 	
 			var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Ideas).call(this, props));
 	
-			_this2.state = { ideas: [], error: '', body: '', title: '', id: 0 };
+			_this2.state = { ideas: [], error: '', body: '', title: '', id: 0, sortBy: 'date_desc' };
 	
 			_this2.addIt = _this2.addIt.bind(_this2);
 			_this2.updateIt = _this2.updateIt.bind(_this2);
@@ -22045,6 +22045,7 @@
 		_createClass(Ideas, [{
 			key: 'componentDidMount',
 			value: function componentDidMount() {
+	
 				this.serverRequest = $.ajax({
 					url: API.list,
 					method: 'GET',
@@ -22073,7 +22074,6 @@
 					success: function (response) {
 						if ('ok' == response.status) {
 							this.setState({ id: response.data.insertId });
-							//$("#id").val(response.data.insertId);
 						}
 					}.bind(this)
 				});
@@ -22082,27 +22082,21 @@
 			key: 'editIt',
 			value: function editIt(e) {
 				$("#memoForm").removeClass("hide");
-				//this.setState({id: $("")  );
-				console.log(e.target.id, $("#" + e.target.id).data("title"), $("#" + e.target.id).data("body"));
+	
+				//console.log(e.target.id, $("#"+e.target.id).data("title"), $("#"+e.target.id).data("body"));
 	
 				this.setState({ id: e.target.id,
 					title: $("#" + e.target.id).data("title"),
 					body: $("#" + e.target.id).data("body")
 				});
-	
-				console.log(e.target.id);
 			}
 		}, {
 			key: 'updateIt',
 			value: function updateIt(e) {
 	
-				//console.log(e.target.id);
-	
 				var id = this.state.id;
 				var title = this.state.title;
 				var body = this.state.body;
-	
-				console.log(id);
 	
 				if (0 == id || 'undefined' == id || '' == title.trim()) {
 					this.setState({ error: "Title can not be blank" });
@@ -22134,7 +22128,6 @@
 					success: function (response) {
 						//this.setState({ideas: response});
 						callbackIdeas(response, this);
-						//location.reload();
 					}.bind(this)
 				});
 			}
@@ -22142,6 +22135,8 @@
 			key: 'sortIt',
 			value: function sortIt(e) {
 				var sortBy = e.target.value;
+	
+				this.setState({ sortBy: sortBy });
 	
 				this.serverRequest = $.ajax({
 					url: API.list,
@@ -22273,7 +22268,7 @@
 									),
 									_react2.default.createElement(
 										'select',
-										{ className: 'form-control', ref: 'sort', onChange: this.sortIt },
+										{ className: 'form-control', ref: 'sort', onChange: this.sortIt, value: this.state.sortBy },
 										_react2.default.createElement(
 											'option',
 											{ value: 'title' },
@@ -22286,7 +22281,7 @@
 										),
 										_react2.default.createElement(
 											'option',
-											{ value: 'date_desc', defaultValue: 'selected' },
+											{ value: 'date_desc' },
 											'Created Date Desc'
 										)
 									)

@@ -27,7 +27,7 @@ var callbackIdeas = (response, _this)=> {
 class Ideas extends React.Component {
    constructor(props){
   	super(props);
-  	this.state = {ideas: [], error: '', body: '', title: '', id: 0};
+  	this.state = {ideas: [], error: '', body: '', title: '', id: 0, sortBy: 'date_desc'};
 
   	this.addIt = this.addIt.bind(this);
   	this.updateIt = this.updateIt.bind(this);
@@ -39,6 +39,7 @@ class Ideas extends React.Component {
   }
 
   componentDidMount() {
+
   	this.serverRequest = $.ajax({
 		url: API.list,
 		method: 'GET',
@@ -65,7 +66,6 @@ class Ideas extends React.Component {
 		success: function(response) {
 			if ('ok' == response.status) {
 				this.setState({id: response.data.insertId});
-				//$("#id").val(response.data.insertId);
 			}
 		}.bind(this)
 	});
@@ -73,27 +73,21 @@ class Ideas extends React.Component {
 
   editIt(e) {
   	$("#memoForm").removeClass("hide");
-  	//this.setState({id: $("")  );
-  	console.log(e.target.id, $("#"+e.target.id).data("title"), $("#"+e.target.id).data("body"));
+
+  	//console.log(e.target.id, $("#"+e.target.id).data("title"), $("#"+e.target.id).data("body"));
 
   	this.setState({id: e.target.id, 
   		title: $("#"+e.target.id).data("title"), 
   		body:$("#"+e.target.id).data("body") 
   	});
 
-
-  	console.log(e.target.id);
   }
 
   updateIt(e) {
 
-   //console.log(e.target.id);
-
    let id = this.state.id;
    let title =this.state.title;
    let body = this.state.body;
-
-   console.log(id);
 
    if (0 == id || 'undefined' == id || '' == title.trim()) {
    	 this.setState({error: "Title can not be blank"});
@@ -124,13 +118,15 @@ class Ideas extends React.Component {
 		success: function(response) {
 			//this.setState({ideas: response});
 			callbackIdeas(response, this);
-			//location.reload();
+
 		}.bind(this)
 	});
   }
 
   sortIt(e) {
   	var sortBy = e.target.value;
+
+  	this.setState({sortBy: sortBy});
 
   	this.serverRequest = $.ajax({
 		url: API.list,
@@ -195,10 +191,10 @@ class Ideas extends React.Component {
 	    			<div className="col-sm-4 ">
 	    				<div className="form-group">
 						  	<label for="usr">Sort By: </label>
-			    			<select className="form-control" ref="sort" onChange={this.sortIt}>
+			    			<select className="form-control" ref="sort" onChange={this.sortIt} value={this.state.sortBy}>
 			    				<option value="title">Title</option>
 			    				<option value="date_asc">Created Date Asc</option>
-			    				<option value="date_desc" defaultValue="selected">Created Date Desc</option>
+			    				<option value="date_desc">Created Date Desc</option>
 			    			</select>
 			    		</div>
 			    	</div>	

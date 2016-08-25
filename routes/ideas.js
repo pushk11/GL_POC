@@ -43,7 +43,7 @@ var Ideas = {
 		     	rowsData.push(rows[i]);
 		     }
 
-		     let result = Object.assign({}, Ideas.result, {status: 'ok', data: rowsData, msg: "Success - Listing Data"});
+		     let result = Object.assign({}, this.result, {status: 'ok', data: rowsData, msg: "Success - Listing Data"});
 
 		 	 res.json(result);
 
