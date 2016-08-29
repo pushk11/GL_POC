@@ -8,21 +8,6 @@ var API = {
 	update: 'http://localhost:8081/ideas/update'
 }
 
-var callbackIdeas = (response, _this)=> {
-	if ('ok' == response.status) {
-		_this.setState({ideas: response.data});
-		if (typeof(Storage) !== "undefined") {
-			localStorage.setItem('ideas', response.data);
-		}
-	} else {
-		// handle failed cases here or get data from localStorage
-		if (typeof(Storage) !== "undefined" && localStorage.getItem('ideas')) {
-			_this.setState({ideas: localStorage.getItem('ideas')});
-		} else {
-			_this.setState({ideas: []});
-		}
-	}
-}
 
 class Ideas extends React.Component {
    constructor(props){
@@ -36,6 +21,27 @@ class Ideas extends React.Component {
   	this.handleBody = this.handleBody.bind(this);
   	this.handleTitle = this.handleTitle.bind(this);
   	this.editIt = this.editIt.bind(this);
+  	this.callbackIdeas = this.callbackIdeas.bind(this);
+  }
+
+  callbackIdeas(response) {
+	if ('ok' == response.status) {
+		this.setState({ideas: response.data});
+		if (typeof(Storage) !== "undefined") {
+			localStorage.setItem('ideas', response.data);
+		}
+	} else {
+		// handle failed cases here or get data from localStorage
+		if (typeof(Storage) !== "undefined" && localStorage.getItem('ideas')) {
+			this.setState({ideas: localStorage.getItem('ideas')});
+		} else {
+			this.setState({ideas: []});
+		}
+	}
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+  	return true;
   }
 
   componentDidMount() {
@@ -45,7 +51,7 @@ class Ideas extends React.Component {
 		method: 'GET',
 		data: {},
 		success: function(response) {
-			callbackIdeas(response, this);
+			this.callbackIdeas(response);
 		}.bind(this)
 	});
   }
@@ -54,10 +60,18 @@ class Ideas extends React.Component {
   	 this.serverRequest.abort();
   }
 
+  resetFieldFieldsBlank() {
+  	this.setState({title:'', body:'', error: ''});
+  }
+
   addIt(e) {
-  	this.setState({error: ""});
+  	this.resetFieldFieldsBlank();
+
   	$("#addBtn").addClass("hide");
   	$("#memoForm").removeClass("hide");
+  	//$('#myFile').val('');
+
+  	$("#title").focus();
   	
   	this.serverRequest = $.ajax({
 		url: API.add,
@@ -71,23 +85,30 @@ class Ideas extends React.Component {
 	});
   }
 
-  editIt(e) {
+  editIt(obj) {
   	$("#memoForm").removeClass("hide");
+  	this.resetFieldFieldsBlank();
 
-  	//console.log(e.target.id, $("#"+e.target.id).data("title"), $("#"+e.target.id).data("body"));
+  	console.log(obj.id, obj.title, obj.body);
 
-  	this.setState({id: e.target.id, 
-  		title: $("#"+e.target.id).data("title"), 
-  		body:$("#"+e.target.id).data("body") 
+  	this.setState({id: obj.id, 
+  		title: obj.title, 
+  		body: obj.body
   	});
+
+  	//$('#myFile').val('');
+
+  	$("#title").focus();
 
   }
 
   updateIt(e) {
 
-   let id = this.state.id;
-   let title =this.state.title;
-   let body = this.state.body;
+  	e.preventDefault();
+
+   var id = this.state.id;
+   var title =this.state.title;
+   var body = this.state.body;
 
    if (0 == id || 'undefined' == id || '' == title.trim()) {
    	 this.setState({error: "Title can not be blank"});
@@ -95,16 +116,31 @@ class Ideas extends React.Component {
    	 return false;
    }
 
+   var fd = new FormData();
+   fd.append('id', id);
+   fd.append('title', title);
+   fd.append('body', body);
+
+   /*if ($('#myFile').val() != "") {
+   	fd.append('myFile', $('#myFile')[0].files[0]);
+   }*/
+
+   console.log(fd);
+
   	this.serverRequest = $.ajax({
 		url: API.update,
 		method: 'POST',
-		data: {id: id, title: title, body: body },
+		data: fd,
+		processData: false,
+		contentType: false,
 		success: function(response) {
 			if ('ok' == response.status) {
 				$("#addBtn").removeClass("hide");
 				$("#memoForm").addClass("hide");
 				this.setState({body: '', id: 0, title: ''});
-				callbackIdeas(response, this);
+				this.callbackIdeas(response);
+			} else {
+				this.setState({error: response.msg});
 			}
 		}.bind(this)
 	});
@@ -117,8 +153,7 @@ class Ideas extends React.Component {
 		data: {id: e.target.value},
 		success: function(response) {
 			//this.setState({ideas: response});
-			callbackIdeas(response, this);
-
+			this.callbackIdeas(response);
 		}.bind(this)
 	});
   }
@@ -134,7 +169,7 @@ class Ideas extends React.Component {
 		data: {sortBy: sortBy},
 		success: function(response) {
 			//this.setState({ideas: response});
-			callbackIdeas(response, this);
+			this.callbackIdeas(response);
 		}.bind(this)
 	});
   }
@@ -144,6 +179,9 @@ class Ideas extends React.Component {
   }
 
   handleTitle(e) {
+  	if (e.target.value.length > 0) {
+  		this.setState({error: ""});
+  	}
 	this.setState({title: e.target.value});
   }
 
@@ -152,10 +190,11 @@ class Ideas extends React.Component {
   	var ideas = this.state.ideas.map( (i) => {
   			return (
   					<div key={i.id} className="keepLeft">
-						<div className="panel panel-primary tileFormat">
+						<div className="panel panel-primary tileFormat tileFormatMore">
 							<button className="keepRight btn btn-xs btn-warning" value={i.id} onClick={this.deleteIt}>X</button>
 							<div className="panel-heading">{i.title}</div>
-							<div className="panel-body cursorPointer" id={i.id} data-body={i.body} data-title={i.title} onClick={this.editIt}>{i.body}</div>
+							<div className="panel-body">{i.body}</div>
+							<div className="panel-footer cursorPointer" onClick={this.editIt.bind(null,i)}>Edit</div>
 						</div>
     				</div>
   				)
@@ -169,20 +208,26 @@ class Ideas extends React.Component {
     				<button className="btn btn-xs btn-default clear" onClick={this.addIt} id="addBtn">Add</button>
     			</div>
     			<div className="col-sm-4 hide" id="memoForm">
-    			    <div className={( this.state.title.length == 0 && this.state.error.length > 0) ? 'alert alert-warning clear' : 'hide clear'} >{this.state.error}</div>
-    				<div className="form-group">
-    				  <input type="hidden" id="id" ref="id" value={this.state.id} />
-					  <label for="title">Title:</label>
-					  <input type="text" className="form-control" ref="title" id="title" placeholder="title" value={this.state.title} onChange={this.handleTitle}/>
-					</div>
-					<div className="form-group">
-					  <label for="body">Body:</label>
-					  <textarea className="form-control" ref="body" id= "body" placeholder="body" rows="10" cols="10" value={this.state.body} onChange={this.handleBody}/>
-					  <div className="clear">{this.state.body.length < 15 ? this.state.body.length : ''}</div>
-					</div>
-					<div className="form-group">
-						<button className="btn btn-sm-default btn-info" onClick={this.updateIt} id="updateBtn">Update</button>
-					</div>
+    			   <form method="post" encType="multipart/form-data" name="ideasForm">
+	    			    <div className={( this.state.error.length > 0) ? 'alert alert-warning clear' : 'hide clear'} >{this.state.error}</div>
+	    				<div className="form-group">
+	    				  <input type="hidden" id="id" ref="id" value={this.state.id} />
+						  <label for="title">Title:</label>
+						  <input type="text" className="form-control" ref="title" id="title" placeholder="title" value={this.state.title} onChange={this.handleTitle}/>
+						</div>
+						<div className="form-group">
+						  <label for="body">Body:</label>
+						  <textarea className="form-control" ref="body" id= "body" placeholder="body" rows="10" cols="10" value={this.state.body} onChange={this.handleBody}/>
+						  <div className="clear">{this.state.body.length < 15 ? this.state.body.length : ''}</div>
+						</div>
+						{/*<div className="form-group">
+						  <label for="myFile">File:</label>
+						  <input type="file" className="form-control" ref="myFile" id= "myFile" />
+						</div> */}
+						<div className="form-group">
+							<button className="btn btn-sm-default btn-info" onClick={this.updateIt} id="updateBtn">Update</button>
+						</div>
+					</form>
     			</div>
     		</div>
     		

@@ -22006,43 +22006,50 @@
 		update: 'http://localhost:8081/ideas/update'
 	};
 	
-	var callbackIdeas = function callbackIdeas(response, _this) {
-		if ('ok' == response.status) {
-			_this.setState({ ideas: response.data });
-			if (typeof Storage !== "undefined") {
-				localStorage.setItem('ideas', response.data);
-			}
-		} else {
-			// handle failed cases here or get data from localStorage
-			if (typeof Storage !== "undefined" && localStorage.getItem('ideas')) {
-				_this.setState({ ideas: localStorage.getItem('ideas') });
-			} else {
-				_this.setState({ ideas: [] });
-			}
-		}
-	};
-	
 	var Ideas = function (_React$Component) {
 		_inherits(Ideas, _React$Component);
 	
 		function Ideas(props) {
 			_classCallCheck(this, Ideas);
 	
-			var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Ideas).call(this, props));
+			var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ideas).call(this, props));
 	
-			_this2.state = { ideas: [], error: '', body: '', title: '', id: 0, sortBy: 'date_desc' };
+			_this.state = { ideas: [], error: '', body: '', title: '', id: 0, sortBy: 'date_desc' };
 	
-			_this2.addIt = _this2.addIt.bind(_this2);
-			_this2.updateIt = _this2.updateIt.bind(_this2);
-			_this2.sortIt = _this2.sortIt.bind(_this2);
-			_this2.deleteIt = _this2.deleteIt.bind(_this2);
-			_this2.handleBody = _this2.handleBody.bind(_this2);
-			_this2.handleTitle = _this2.handleTitle.bind(_this2);
-			_this2.editIt = _this2.editIt.bind(_this2);
-			return _this2;
+			_this.addIt = _this.addIt.bind(_this);
+			_this.updateIt = _this.updateIt.bind(_this);
+			_this.sortIt = _this.sortIt.bind(_this);
+			_this.deleteIt = _this.deleteIt.bind(_this);
+			_this.handleBody = _this.handleBody.bind(_this);
+			_this.handleTitle = _this.handleTitle.bind(_this);
+			_this.editIt = _this.editIt.bind(_this);
+			_this.callbackIdeas = _this.callbackIdeas.bind(_this);
+			return _this;
 		}
 	
 		_createClass(Ideas, [{
+			key: 'callbackIdeas',
+			value: function callbackIdeas(response) {
+				if ('ok' == response.status) {
+					this.setState({ ideas: response.data });
+					if (typeof Storage !== "undefined") {
+						localStorage.setItem('ideas', response.data);
+					}
+				} else {
+					// handle failed cases here or get data from localStorage
+					if (typeof Storage !== "undefined" && localStorage.getItem('ideas')) {
+						this.setState({ ideas: localStorage.getItem('ideas') });
+					} else {
+						this.setState({ ideas: [] });
+					}
+				}
+			}
+		}, {
+			key: 'shouldComponentUpdate',
+			value: function shouldComponentUpdate(nextProps, nextState) {
+				return true;
+			}
+		}, {
 			key: 'componentDidMount',
 			value: function componentDidMount() {
 	
@@ -22051,7 +22058,7 @@
 					method: 'GET',
 					data: {},
 					success: function (response) {
-						callbackIdeas(response, this);
+						this.callbackIdeas(response);
 					}.bind(this)
 				});
 			}
@@ -22061,11 +22068,20 @@
 				this.serverRequest.abort();
 			}
 		}, {
+			key: 'resetFieldFieldsBlank',
+			value: function resetFieldFieldsBlank() {
+				this.setState({ title: '', body: '', error: '' });
+			}
+		}, {
 			key: 'addIt',
 			value: function addIt(e) {
-				this.setState({ error: "" });
+				this.resetFieldFieldsBlank();
+	
 				$("#addBtn").addClass("hide");
 				$("#memoForm").removeClass("hide");
+				//$('#myFile').val('');
+	
+				$("#title").focus();
 	
 				this.serverRequest = $.ajax({
 					url: API.add,
@@ -22080,19 +22096,26 @@
 			}
 		}, {
 			key: 'editIt',
-			value: function editIt(e) {
+			value: function editIt(obj) {
 				$("#memoForm").removeClass("hide");
+				this.resetFieldFieldsBlank();
 	
-				//console.log(e.target.id, $("#"+e.target.id).data("title"), $("#"+e.target.id).data("body"));
+				console.log(obj.id, obj.title, obj.body);
 	
-				this.setState({ id: e.target.id,
-					title: $("#" + e.target.id).data("title"),
-					body: $("#" + e.target.id).data("body")
+				this.setState({ id: obj.id,
+					title: obj.title,
+					body: obj.body
 				});
+	
+				//$('#myFile').val('');
+	
+				$("#title").focus();
 			}
 		}, {
 			key: 'updateIt',
 			value: function updateIt(e) {
+	
+				e.preventDefault();
 	
 				var id = this.state.id;
 				var title = this.state.title;
@@ -22104,16 +22127,31 @@
 					return false;
 				}
 	
+				var fd = new FormData();
+				fd.append('id', id);
+				fd.append('title', title);
+				fd.append('body', body);
+	
+				/*if ($('#myFile').val() != "") {
+	   	fd.append('myFile', $('#myFile')[0].files[0]);
+	   }*/
+	
+				console.log(fd);
+	
 				this.serverRequest = $.ajax({
 					url: API.update,
 					method: 'POST',
-					data: { id: id, title: title, body: body },
+					data: fd,
+					processData: false,
+					contentType: false,
 					success: function (response) {
 						if ('ok' == response.status) {
 							$("#addBtn").removeClass("hide");
 							$("#memoForm").addClass("hide");
 							this.setState({ body: '', id: 0, title: '' });
-							callbackIdeas(response, this);
+							this.callbackIdeas(response);
+						} else {
+							this.setState({ error: response.msg });
 						}
 					}.bind(this)
 				});
@@ -22127,7 +22165,7 @@
 					data: { id: e.target.value },
 					success: function (response) {
 						//this.setState({ideas: response});
-						callbackIdeas(response, this);
+						this.callbackIdeas(response);
 					}.bind(this)
 				});
 			}
@@ -22144,7 +22182,7 @@
 					data: { sortBy: sortBy },
 					success: function (response) {
 						//this.setState({ideas: response});
-						callbackIdeas(response, this);
+						this.callbackIdeas(response);
 					}.bind(this)
 				});
 			}
@@ -22156,12 +22194,15 @@
 		}, {
 			key: 'handleTitle',
 			value: function handleTitle(e) {
+				if (e.target.value.length > 0) {
+					this.setState({ error: "" });
+				}
 				this.setState({ title: e.target.value });
 			}
 		}, {
 			key: 'render',
 			value: function render() {
-				var _this3 = this;
+				var _this2 = this;
 	
 				var ideas = this.state.ideas.map(function (i) {
 					return _react2.default.createElement(
@@ -22169,10 +22210,10 @@
 						{ key: i.id, className: 'keepLeft' },
 						_react2.default.createElement(
 							'div',
-							{ className: 'panel panel-primary tileFormat' },
+							{ className: 'panel panel-primary tileFormat tileFormatMore' },
 							_react2.default.createElement(
 								'button',
-								{ className: 'keepRight btn btn-xs btn-warning', value: i.id, onClick: _this3.deleteIt },
+								{ className: 'keepRight btn btn-xs btn-warning', value: i.id, onClick: _this2.deleteIt },
 								'X'
 							),
 							_react2.default.createElement(
@@ -22182,8 +22223,13 @@
 							),
 							_react2.default.createElement(
 								'div',
-								{ className: 'panel-body cursorPointer', id: i.id, 'data-body': i.body, 'data-title': i.title, onClick: _this3.editIt },
+								{ className: 'panel-body' },
 								i.body
+							),
+							_react2.default.createElement(
+								'div',
+								{ className: 'panel-footer cursorPointer', onClick: _this2.editIt.bind(null, i) },
+								'Edit'
 							)
 						)
 					);
@@ -22208,43 +22254,47 @@
 							'div',
 							{ className: 'col-sm-4 hide', id: 'memoForm' },
 							_react2.default.createElement(
-								'div',
-								{ className: this.state.title.length == 0 && this.state.error.length > 0 ? 'alert alert-warning clear' : 'hide clear' },
-								this.state.error
-							),
-							_react2.default.createElement(
-								'div',
-								{ className: 'form-group' },
-								_react2.default.createElement('input', { type: 'hidden', id: 'id', ref: 'id', value: this.state.id }),
-								_react2.default.createElement(
-									'label',
-									{ 'for': 'title' },
-									'Title:'
-								),
-								_react2.default.createElement('input', { type: 'text', className: 'form-control', ref: 'title', id: 'title', placeholder: 'title', value: this.state.title, onChange: this.handleTitle })
-							),
-							_react2.default.createElement(
-								'div',
-								{ className: 'form-group' },
-								_react2.default.createElement(
-									'label',
-									{ 'for': 'body' },
-									'Body:'
-								),
-								_react2.default.createElement('textarea', { className: 'form-control', ref: 'body', id: 'body', placeholder: 'body', rows: '10', cols: '10', value: this.state.body, onChange: this.handleBody }),
+								'form',
+								{ method: 'post', encType: 'multipart/form-data', name: 'ideasForm' },
 								_react2.default.createElement(
 									'div',
-									{ className: 'clear' },
-									this.state.body.length < 15 ? this.state.body.length : ''
-								)
-							),
-							_react2.default.createElement(
-								'div',
-								{ className: 'form-group' },
+									{ className: this.state.error.length > 0 ? 'alert alert-warning clear' : 'hide clear' },
+									this.state.error
+								),
 								_react2.default.createElement(
-									'button',
-									{ className: 'btn btn-sm-default btn-info', onClick: this.updateIt, id: 'updateBtn' },
-									'Update'
+									'div',
+									{ className: 'form-group' },
+									_react2.default.createElement('input', { type: 'hidden', id: 'id', ref: 'id', value: this.state.id }),
+									_react2.default.createElement(
+										'label',
+										{ 'for': 'title' },
+										'Title:'
+									),
+									_react2.default.createElement('input', { type: 'text', className: 'form-control', ref: 'title', id: 'title', placeholder: 'title', value: this.state.title, onChange: this.handleTitle })
+								),
+								_react2.default.createElement(
+									'div',
+									{ className: 'form-group' },
+									_react2.default.createElement(
+										'label',
+										{ 'for': 'body' },
+										'Body:'
+									),
+									_react2.default.createElement('textarea', { className: 'form-control', ref: 'body', id: 'body', placeholder: 'body', rows: '10', cols: '10', value: this.state.body, onChange: this.handleBody }),
+									_react2.default.createElement(
+										'div',
+										{ className: 'clear' },
+										this.state.body.length < 15 ? this.state.body.length : ''
+									)
+								),
+								_react2.default.createElement(
+									'div',
+									{ className: 'form-group' },
+									_react2.default.createElement(
+										'button',
+										{ className: 'btn btn-sm-default btn-info', onClick: this.updateIt, id: 'updateBtn' },
+										'Update'
+									)
 								)
 							)
 						)
