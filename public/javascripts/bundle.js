@@ -22344,8 +22344,7 @@
 							ideas,
 							_react2.default.createElement(_Nodata2.default, { show: ideas.length > 0 ? false : true })
 						)
-					),
-					_react2.default.createElement('div', { className: 'tileContainerView hide' })
+					)
 				);
 			}
 		}]);

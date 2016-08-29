@@ -249,9 +249,6 @@ class Ideas extends React.Component {
 			    	<Nodata show={ideas.length > 0 ? false : true } />
 		    	</div>
 			</div>
-			<div className="tileContainerView hide">
-		    	
-			</div>
 		</div>
 		);
   }
