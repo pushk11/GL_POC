@@ -22045,11 +22045,6 @@
 				}
 			}
 		}, {
-			key: 'shouldComponentUpdate',
-			value: function shouldComponentUpdate(nextProps, nextState) {
-				return true;
-			}
-		}, {
 			key: 'componentDidMount',
 			value: function componentDidMount() {
 	

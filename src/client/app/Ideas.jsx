@@ -40,10 +40,6 @@ class Ideas extends React.Component {
 	}
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-  	return true;
-  }
-
   componentDidMount() {
 
   	this.serverRequest = $.ajax({
