@@ -12,7 +12,14 @@ var API = {
 class Ideas extends React.Component {
    constructor(props){
   	super(props);
-  	this.state = {ideas: [], error: '', body: '', title: '', id: 0, sortBy: 'date_desc'};
+  	this.state = {ideas: [], 
+  		error: '', 
+  		body: '', 
+  		title: '', 
+  		id: 0, 
+  		sortBy: 'date_desc',
+  		addEditAction: ''
+  	};
 
   	this.addIt = this.addIt.bind(this);
   	this.updateIt = this.updateIt.bind(this);
@@ -22,6 +29,7 @@ class Ideas extends React.Component {
   	this.handleTitle = this.handleTitle.bind(this);
   	this.editIt = this.editIt.bind(this);
   	this.callbackIdeas = this.callbackIdeas.bind(this);
+  	this.cancelIt = this.cancelIt.bind(this);
   }
 
   callbackIdeas(response) {
@@ -57,14 +65,17 @@ class Ideas extends React.Component {
   }
 
   resetFieldFieldsBlank() {
-  	this.setState({title:'', body:'', error: ''});
+  	this.setState({title:'', body:'', error: '', addEditAction: ''});
   }
 
   addIt(e) {
   	this.resetFieldFieldsBlank();
 
+  	this.setState({addEditAction: 'ADD'});
+
   	$("#addBtn").addClass("hide");
   	$("#memoForm").removeClass("hide");
+
   	//$('#myFile').val('');
 
   	$("#title").focus();
@@ -84,6 +95,8 @@ class Ideas extends React.Component {
   editIt(obj) {
   	$("#memoForm").removeClass("hide");
   	this.resetFieldFieldsBlank();
+
+  	this.setState({addEditAction: 'EDIT'});
 
   	console.log(obj.id, obj.title, obj.body);
 
@@ -142,11 +155,13 @@ class Ideas extends React.Component {
 	});
   }
 
-  deleteIt(e) {
+  deleteIt(obj) {
+  	//e.preventDefault();
+
   	this.serverRequest = $.ajax({
-		url: API.del+"/"+e.target.value,
+		url: API.del+"/"+obj.id,
 		method: 'DELETE',
-		data: {id: e.target.value},
+		data: {id: obj.id},
 		success: function(response) {
 			//this.setState({ideas: response});
 			this.callbackIdeas(response);
@@ -181,13 +196,24 @@ class Ideas extends React.Component {
 	this.setState({title: e.target.value});
   }
 
+  cancelIt(e) {
+  	e.preventDefault();
+  	$("#memoForm").addClass("hide");
+  	$("#addBtn").removeClass("hide");
+
+  	if ('ADD' == this.state.addEditAction) {
+  		// call delete
+  		this.deleteIt({id: this.state.id});
+  	}
+  }
+
   render () {
 
   	var ideas = this.state.ideas.map( (i) => {
   			return (
   					<div key={i.id} className="keepLeft">
 						<div className="panel panel-primary tileFormat tileFormatMore">
-							<button className="keepRight btn btn-xs btn-warning" value={i.id} onClick={this.deleteIt}>X</button>
+							<button className="keepRight btn btn-xs btn-warning" value={i.id} onClick={this.deleteIt.bind(null,i)}>X</button>
 							<div className="panel-heading">{i.title}</div>
 							<div className="panel-body">{i.body}</div>
 							<div className="panel-footer cursorPointer" onClick={this.editIt.bind(null,i)}>Edit</div>
@@ -208,20 +234,22 @@ class Ideas extends React.Component {
 	    			    <div className={( this.state.error.length > 0) ? 'alert alert-warning clear' : 'hide clear'} >{this.state.error}</div>
 	    				<div className="form-group">
 	    				  <input type="hidden" id="id" ref="id" value={this.state.id} />
-						  <label for="title">Title:</label>
+	    				  <input type="hidden" id="addEditAction" ref="addEditAction" value={this.state.addEditAction} />
+						  <label htmlFor="title">Title:</label>
 						  <input type="text" className="form-control" ref="title" id="title" placeholder="title" value={this.state.title} onChange={this.handleTitle}/>
 						</div>
 						<div className="form-group">
-						  <label for="body">Body:</label>
+						  <label htmlFor="body">Body:</label>
 						  <textarea className="form-control" ref="body" id= "body" placeholder="body" rows="10" cols="10" value={this.state.body} onChange={this.handleBody}/>
 						  <div className="clear">{this.state.body.length < 15 ? this.state.body.length : ''}</div>
 						</div>
 						{/*<div className="form-group">
-						  <label for="myFile">File:</label>
+						  <label htmlFor="myFile">File:</label>
 						  <input type="file" className="form-control" ref="myFile" id= "myFile" />
 						</div> */}
 						<div className="form-group">
-							<button className="btn btn-sm-default btn-info" onClick={this.updateIt} id="updateBtn">Update</button>
+							<button className="btn btn-sm-default btn-info marginSml" onClick={this.updateIt} id="updateBtn">Update</button>
+							<button className="btn btn-sm-default btn-warning marginSml" onClick={this.cancelIt} id="cancelBtn">Cancel</button>
 						</div>
 					</form>
     			</div>
@@ -231,7 +259,7 @@ class Ideas extends React.Component {
 		    	<div className="clear">
 	    			<div className="col-sm-4 ">
 	    				<div className="form-group">
-						  	<label for="usr">Sort By: </label>
+						  	<label htmlFor="sort">Sort By: </label>
 			    			<select className="form-control" ref="sort" onChange={this.sortIt} value={this.state.sortBy}>
 			    				<option value="title">Title</option>
 			    				<option value="date_asc">Created Date Asc</option>
