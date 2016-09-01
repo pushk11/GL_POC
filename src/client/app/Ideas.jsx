@@ -98,9 +98,7 @@ class Ideas extends React.Component {
 
   	this.setState({addEditAction: 'EDIT'});
 
-  	console.log(obj.id, obj.title, obj.body);
-
-  	this.setState({id: obj.id, 
+  	this.setState({id: obj._id, 
   		title: obj.title, 
   		body: obj.body
   	});
@@ -158,10 +156,12 @@ class Ideas extends React.Component {
   deleteIt(obj) {
   	//e.preventDefault();
 
+  	var id = obj._id;
+
   	this.serverRequest = $.ajax({
-		url: API.del+"/"+obj.id,
+		url: API.del+"/"+id,
 		method: 'DELETE',
-		data: {id: obj.id},
+		data: {id: id},
 		success: function(response) {
 			//this.setState({ideas: response});
 			this.callbackIdeas(response);
@@ -203,7 +203,7 @@ class Ideas extends React.Component {
 
   	if ('ADD' == this.state.addEditAction) {
   		// call delete
-  		this.deleteIt({id: this.state.id});
+  		this.deleteIt({_id: this.state.id});
   	}
   }
 
@@ -211,12 +211,12 @@ class Ideas extends React.Component {
 
   	var ideas = this.state.ideas.map( (i) => {
   			return (
-  					<div key={i.id} className="keepLeft">
+  					<div key={i._id} className="keepLeft">
 						<div className="panel panel-primary tileFormat tileFormatMore">
-							<button className="keepRight btn btn-xs btn-warning" value={i.id} onClick={this.deleteIt.bind(null,i)}>X</button>
+							<button className="keepRight btn btn-xs btn-warning" value={i._id} onClick={this.deleteIt.bind(null,i)}>X</button>
 							<div className="panel-heading">{i.title}</div>
 							<div className="panel-body">{i.body}</div>
-							<div className="panel-footer cursorPointer" onClick={this.editIt.bind(null,i)}>Edit</div>
+							<div className="panel-footer cursorPointer" onClick={this.editIt.bind(null,i)}>Edit It</div>
 						</div>
     				</div>
   				)

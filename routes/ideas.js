@@ -5,17 +5,27 @@ var express = require('express');
 var fse = require('fs-extra');
 
 //var app = express();
-
-var db = () => {
+////////////// For MySQL ///////////
+/*var db = () => {
 	return mysql.createConnection({
 	   host     : 'localhost',
 	   user     : 'root',
 	   password : '',
 	   database : 'memo'
 	 });
+};*/
+///////////////////////////////////
 
-////
-};
+/////// Mongo DB ////// can be put in config file
+var Mongo = require("mongodb");
+var MongoDB = {   
+				Client: Mongo.MongoClient,
+				Url: 'mongodb://localhost:27017/ideas',
+				ObjectID: Mongo.ObjectID,
+				Table: 'ideas'
+			 }; 
+
+//// ////////
 
 var Ideas = {
 	result: {status: 'failed', data: [], msg: ""},
@@ -24,6 +34,33 @@ var Ideas = {
 	getList: function(req, res) {
 
 		    console.log(req.query.sortBy);
+
+		    let sortBy = {created_date : -1};
+		    let qtrSortBy = (req.query.sortBy) ? req.query.sortBy.trim() : '';
+		    if ('' != qtrSortBy) {
+		    	switch(qtrSortBy) {
+		    		case 'title':
+		    		 sortBy = {title : 1};
+		    		 break;
+		    		case 'date_asc':
+		    		 sortBy = {created_date : 1};
+		    		 break;
+		    	}
+		    }
+
+            MongoDB.Client.connect(MongoDB.Url, (err, db) => {
+
+           	db.collection(MongoDB.Table).find({}).sort(sortBy).toArray( (err, items) => {
+           	   	 	if (!err) {
+           	   			let result = Object.assign({}, Ideas.result, {status: 'ok', data: items, msg: "Success - Listing Data"});
+		 	 			res.json(result);
+		 	 		} else {
+		 	 			res.json({error: "Error in getting data", desc: err});
+		 	 		}
+           	   });
+           });
+
+		    /* //// Using MySQL ////
 
 		    let sortBy = ' ORDER BY created_date DESC';
 		    let qtrSortBy = (req.query.sortBy) ? req.query.sortBy.trim() : '';
@@ -56,9 +93,25 @@ var Ideas = {
 		     console.log('Error while performing Query.');
 		   }
 
-		 });
+		 });*/
 	},
 	addIt: function(req, res) {
+
+		MongoDB.Client.connect(MongoDB.Url, (err, db) => {
+
+       	db.collection(MongoDB.Table).insert({title: '', body: '', created_date: new Date()}, (err, items) => {
+       	   	 	if (!err) {
+       	   	 		console.log(items);
+       	   			let result = Object.assign({}, Ideas.result, {status: 'ok', data: {"insertId": items.insertedIds[0]}, msg: "Success - Listing Data"});
+	 	 			res.json(result);
+	 	 		} else {
+	 	 			res.json({error: "Error in getting data", desc: err});
+	 	 		}
+       	   });
+       });
+
+		/* ///// MysQL Code ////
+
 		let con = db();	
 		con.query('INSERT into idea(title)VALUES(?)', [''], function(checkError, rows, fields) {
 			if (!checkError ) {
@@ -72,14 +125,14 @@ var Ideas = {
 	 	 		res.json(result);
 				con.end();
 			}
-		});
+		});*/
 	},
 	updateIt: function(req, res) {
 		try {
                 var multiparty = require("multiparty");
 				var form = new multiparty.Form();
 
-			    form.parse(req, function(err, fields, files) {
+			    form.parse(req, (err, fields, files) => {
 
 				   	//////////////////////////////////////////
 				   	
@@ -94,12 +147,27 @@ var Ideas = {
 						return;
 					}
 
-					var con = db();
-					let data = { title: title, body : body};
-					let where = {id: id};
+					MongoDB.Client.connect(MongoDB.Url, (err, db) => {
 
-					con.query('UPDATE idea SET ? WHERE ? ', [data, where], function(checkError, rows, fields) {
-						if (!checkError ) {
+ 						let data = { title: title, body : body, created_date: new Date() };
+
+ 						db.collection(MongoDB.Table).update({_id: MongoDB.ObjectID(id)}, data, (err, ret) => {
+ 							if (!err) {
+			       	   	 		Ideas.getList(req, res);
+				 	 		} else {
+				 	 			let result = Object.assign({}, Ideas.result, {msg: "Failed - Not Updated"});
+				 	 			res.json(result);
+				 	 		}
+			 			});
+ 					});
+
+
+					///////////////////// MySQL code //////
+					//let data = { title: title, body : body};
+					//let where = {id: id};
+					//var con = db();
+					//con.query('UPDATE idea SET ? WHERE ? ', [data, where], function(checkError, rows, fields) {
+					//	if (!checkError ) {
 
 							/*if (typeof files.myFile !== 'undefined' && files.myFile[0]) {
 							  var extArr = files.myFile[0].originalFilename.split('.');
@@ -113,7 +181,7 @@ var Ideas = {
 							  } 
 					        }*/
 							//res.json({'status' : 'ok'});
-							Ideas.getList(req, res);
+					/*		Ideas.getList(req, res);
 							con.end();
 						} else {
 							//res.json({'status' : 'failed'});
@@ -121,7 +189,7 @@ var Ideas = {
 				 	 		res.json(result);
 							con.end();
 						}
-					});
+					});*/
 					/////////////////////////////////////////
 					 
 				});
@@ -142,11 +210,28 @@ var Ideas = {
 			let result = Object.assign({}, Ideas.result, {msg: "Delete failed - Invalid ID"});
 		 	res.json(result);
 		} else {
+
+			MongoDB.Client.connect(MongoDB.Url, (err, db) => {
+
+				db.collection(MongoDB.Table).remove({_id: MongoDB.ObjectID(id)}, (err, ret) => {
+					if (!err) {
+	       	   	 		Ideas.getList(req, res);
+		 	 		} else {
+		 	 			let result = Object.assign({}, Ideas.result, {msg: "Failed - Not Updated"});
+		 	 			res.json(result);
+		 	 		}
+	 			});
+			});
+
+
+			/*
+				////// MysqL code////
+
 			let con = db();	
 			con.query('DELETE FROM idea WHERE id IN (?) ', [id], function(checkError, result) {
 				if (!checkError && (result.affectedRows > 0) ) {
 					Ideas.getList(req, res);
-
+			*/
 					// delete file
 					/*try{
 					 fse.removeSync(Ideas.uploadPath+id+".*");
@@ -155,12 +240,12 @@ var Ideas = {
 				    }*/
 
 					//res.json({'status' : 'ok'});
-					con.end();
+			/*		con.end();
 				} else {
 					//res.json({'status' : 'failed'});
 					con.end();
 				}
-			});
+			});*/
 		}
 	}
 
