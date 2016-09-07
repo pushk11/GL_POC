@@ -83,7 +83,7 @@
 	  function App() {
 	    _classCallCheck(this, App);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(App).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).apply(this, arguments));
 	  }
 	
 	  _createClass(App, [{
@@ -21991,6 +21991,10 @@
 	
 	var _Nodata2 = _interopRequireDefault(_Nodata);
 	
+	var _reactDom = __webpack_require__(/*! react-dom */ 34);
+	
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22012,7 +22016,7 @@
 	  function Ideas(props) {
 	    _classCallCheck(this, Ideas);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Ideas).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (Ideas.__proto__ || Object.getPrototypeOf(Ideas)).call(this, props));
 	
 	    _this.state = { ideas: [],
 	      error: '',
@@ -22086,8 +22090,7 @@
 	      $("#memoForm").removeClass("hide");
 	
 	      //$('#myFile').val('');
-	
-	      $("#title").focus();
+	      _reactDom2.default.findDOMNode(this.refs.title).focus();
 	
 	      this.serverRequest = $.ajax({
 	        url: API.add,
@@ -22415,7 +22418,7 @@
 		function Nodata() {
 			_classCallCheck(this, Nodata);
 	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(Nodata).apply(this, arguments));
+			return _possibleConstructorReturn(this, (Nodata.__proto__ || Object.getPrototypeOf(Nodata)).apply(this, arguments));
 		}
 	
 		_createClass(Nodata, [{
@@ -22480,7 +22483,7 @@
 	  function Header() {
 	    _classCallCheck(this, Header);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Header).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (Header.__proto__ || Object.getPrototypeOf(Header)).apply(this, arguments));
 	  }
 	
 	  _createClass(Header, [{
@@ -22536,7 +22539,7 @@
 	  function Footer() {
 	    _classCallCheck(this, Footer);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Footer).apply(this, arguments));
+	    return _possibleConstructorReturn(this, (Footer.__proto__ || Object.getPrototypeOf(Footer)).apply(this, arguments));
 	  }
 	
 	  _createClass(Footer, [{

@@ -1,5 +1,6 @@
 import React from 'react';
 import Nodata from './Nodata.jsx';
+import ReactDOM from 'react-dom';
 
 var API = {
 	list: 'http://localhost:8081/ideas',
@@ -77,9 +78,8 @@ class Ideas extends React.Component {
   	$("#memoForm").removeClass("hide");
 
   	//$('#myFile').val('');
+  	ReactDOM.findDOMNode(this.refs.title).focus();
 
-  	$("#title").focus();
-  	
   	this.serverRequest = $.ajax({
 		url: API.add,
 		method: 'POST',
