@@ -1,5 +1,6 @@
 import React from 'react';
 import Nodata from './Nodata.jsx';
+import ReactDOM from 'react-dom';
 
 var API = {
 	list: 'http://localhost:8081/ideas',
@@ -78,7 +79,7 @@ class Ideas extends React.Component {
 
   	//$('#myFile').val('');
 
-  	$("#title").focus();
+  	ReactDOM.findDOMNode(this.refs.title).focus();
   	
   	this.serverRequest = $.ajax({
 		url: API.add,
