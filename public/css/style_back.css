@@ -1,0 +1,58 @@
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+	font-size: 11px;
+	color: #999999;
+}
+.header{
+	background-color: #f0f0f0;
+	margin: -0px; 
+	padding: 5px;
+	clear: both;
+}
+.footer{
+	background-color: #f0f0f0;
+	margin: 0px;
+	padding: 2px;
+	clear: both;
+}
+.content {
+	margin: 2px;
+}
+.tileFormat {
+	height: 150px;
+	width: 150px;
+}
+.tileFormatMore {
+	margin: 5px;	
+}
+.keepLeft {
+	float: left;
+}
+.keepRight {
+	float: right;
+}
+.clear{
+	clear: both;
+	margin: 1px;
+}
+.tileContainer{
+	min-width: 200px;
+	overflow: auto;
+	margin: 2px;
+	clear: both;
+}
+.hide{
+	display: none;
+}
+.show{
+	display: block;
+}
+.selectClass {
+	border-radius: 2px;
+}
+.cursorPointer{
+	cursor: pointer;
+}
+.marginSml{
+	margin: 1px;
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import Nodata from './Nodata.jsx';
 import ReactDOM from 'react-dom';
+import CommonClass from './Common.jsx';
 
 var API = {
 	list: 'http://localhost:8081/ideas',
@@ -10,7 +11,7 @@ var API = {
 }
 
 
-class Ideas extends React.Component {
+class Ideas extends CommonClass {
    constructor(props){
   	super(props);
   	this.state = {ideas: [], 
@@ -30,35 +31,32 @@ class Ideas extends React.Component {
   	this.handleTitle = this.handleTitle.bind(this);
   	this.editIt = this.editIt.bind(this);
   	this.callbackIdeas = this.callbackIdeas.bind(this);
+    this.callbackAdd = this.callbackAdd.bind(this);
+    this.callbackUpdate = this.callbackUpdate.bind(this);
+    this.callbackDelete = this.callbackDelete.bind(this);
+    this.callbackSortIt = this.callbackSortIt.bind(this);
   	this.cancelIt = this.cancelIt.bind(this);
   }
 
   callbackIdeas(response) {
-	if ('ok' == response.status) {
-		this.setState({ideas: response.data});
-		if (typeof(Storage) !== "undefined") {
-			localStorage.setItem('ideas', response.data);
-		}
-	} else {
-		// handle failed cases here or get data from localStorage
-		if (typeof(Storage) !== "undefined" && localStorage.getItem('ideas')) {
-			this.setState({ideas: localStorage.getItem('ideas')});
-		} else {
-			this.setState({ideas: []});
-		}
-	}
+  	if ('ok' == response.status) {
+  		this.setState({ideas: response.data});
+  		if (typeof(Storage) !== "undefined") {
+  			localStorage.setItem('ideas', response.data);
+  		}
+  	} else {
+    		// handle failed cases here or get data from localStorage
+    		if (typeof(Storage) !== "undefined" && localStorage.getItem('ideas')) {
+    			this.setState({ideas: localStorage.getItem('ideas')});
+    		} else {
+    			this.setState({ideas: []});
+    		}
+  	}
   }
 
   componentDidMount() {
-
-  	this.serverRequest = $.ajax({
-		url: API.list,
-		method: 'GET',
-		data: {},
-		success: function(response) {
-			this.callbackIdeas(response);
-		}.bind(this)
-	});
+    let callbackInfo = {obj: this, callback: 'callbackIdeas'};
+    this.http(API.list,'GET',{}, callbackInfo);
   }
 
   componentWillUnmount() {
@@ -80,17 +78,16 @@ class Ideas extends React.Component {
   	//$('#myFile').val('');
 
   	ReactDOM.findDOMNode(this.refs.title).focus();
-  	
-  	this.serverRequest = $.ajax({
-		url: API.add,
-		method: 'POST',
-		data: {},
-		success: function(response) {
-			if ('ok' == response.status) {
-				this.setState({id: response.data.insertId});
-			}
-		}.bind(this)
-	});
+
+    let callbackInfo = {obj: this, callback: 'callbackAdd'};
+    this.http(API.add,'POST', {}, callbackInfo);
+
+  }
+
+  callbackAdd(response) {
+    if ('ok' == response.status) {
+      this.setState({id: response.data.insertId});
+    }
   }
 
   editIt(obj) {
@@ -135,55 +132,53 @@ class Ideas extends React.Component {
 
    console.log(fd);
 
-  	this.serverRequest = $.ajax({
-		url: API.update,
-		method: 'POST',
-		data: fd,
-		processData: false,
-		contentType: false,
-		success: function(response) {
-			if ('ok' == response.status) {
-				$("#addBtn").removeClass("hide");
-				$("#memoForm").addClass("hide");
-				this.setState({body: '', id: 0, title: ''});
-				this.callbackIdeas(response);
-			} else {
-				this.setState({error: response.msg});
-			}
-		}.bind(this)
-	});
+   let callbackInfo = {obj: this, callback: 'callbackUpdate'};
+   this.http(API.update,'POST', fd, callbackInfo);
+  }
+
+  callbackUpdate(response) {
+    if ('ok' == response.status) {
+      $("#addBtn").removeClass("hide");
+      $("#memoForm").addClass("hide");
+      this.setState({body: '', id: 0, title: ''});
+      this.callbackIdeas(response);
+    } else {
+      this.setState({error: response.msg});
+    }
   }
 
   deleteIt(obj) {
   	//e.preventDefault();
-
   	var id = obj._id;
+    let callbackInfo = {obj: this, callback: 'callbackDelete'};
+    this.http(API.del+"/"+id,'DELETE', {id: id}, callbackInfo);
+  }
 
-  	this.serverRequest = $.ajax({
-		url: API.del+"/"+id,
-		method: 'DELETE',
-		data: {id: id},
-		success: function(response) {
-			//this.setState({ideas: response});
-			this.callbackIdeas(response);
-		}.bind(this)
-	});
+  callbackDelete(response) {
+    this.callbackIdeas(response);
   }
 
   sortIt(e) {
   	var sortBy = e.target.value;
 
   	this.setState({sortBy: sortBy});
+    let callbackInfo = {obj: this, callback: 'callbackSort'};
+    this.http(API.list,'GET', {sortBy: sortBy}, callbackInfo);
+
 
   	this.serverRequest = $.ajax({
-		url: API.list,
-		method: 'GET',
-		data: {sortBy: sortBy},
-		success: function(response) {
-			//this.setState({ideas: response});
-			this.callbackIdeas(response);
-		}.bind(this)
-	});
+  		url: API.list,
+  		method: 'GET',
+  		data: {sortBy: sortBy},
+  		success: function(response) {
+  			//this.setState({ideas: response});
+  			this.callbackIdeas(response);
+  		}.bind(this)
+  	});
+  }
+
+  callbackSortIt(response) {
+    this.callbackIdeas(response);
   }
 
   handleBody(e) {
