@@ -22002,22 +22002,61 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var API = {
-	  list: 'http://localhost:8081/ideas',
-	  add: 'http://localhost:8081/ideas/new',
-	  del: 'http://localhost:8081/ideas/delete',
-	  update: 'http://localhost:8081/ideas/update'
-	};
+	var IdeasContent = function (_CommonClass) {
+	  _inherits(IdeasContent, _CommonClass);
 	
-	var Ideas = function (_CommonClass) {
-	  _inherits(Ideas, _CommonClass);
+	  function IdeasContent() {
+	    _classCallCheck(this, IdeasContent);
+	
+	    return _possibleConstructorReturn(this, (IdeasContent.__proto__ || Object.getPrototypeOf(IdeasContent)).apply(this, arguments));
+	  }
+	
+	  _createClass(IdeasContent, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { key: this.props.content._id, className: 'keepLeft' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel panel-primary tileFormat tileFormatMore' },
+	          _react2.default.createElement(
+	            'button',
+	            { className: 'keepRight btn btn-xs btn-warning', value: this.props.content._id, onClick: this.props.parentThis.deleteIt.bind(null, this.props.content) },
+	            'X'
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-heading' },
+	            this.props.content.title
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-body' },
+	            this.props.content.body
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'panel-footer cursorPointer', onClick: this.props.parentThis.editIt.bind(null, this.props.content) },
+	            'Edit It'
+	          )
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return IdeasContent;
+	}(_Common2.default);
+	
+	var Ideas = function (_CommonClass2) {
+	  _inherits(Ideas, _CommonClass2);
 	
 	  function Ideas(props) {
 	    _classCallCheck(this, Ideas);
 	
-	    var _this = _possibleConstructorReturn(this, (Ideas.__proto__ || Object.getPrototypeOf(Ideas)).call(this, props));
+	    var _this2 = _possibleConstructorReturn(this, (Ideas.__proto__ || Object.getPrototypeOf(Ideas)).call(this, props));
 	
-	    _this.state = { ideas: [],
+	    _this2.state = { ideas: [],
 	      error: '',
 	      body: '',
 	      title: '',
@@ -22026,20 +22065,20 @@
 	      addEditAction: ''
 	    };
 	
-	    _this.addIt = _this.addIt.bind(_this);
-	    _this.updateIt = _this.updateIt.bind(_this);
-	    _this.sortIt = _this.sortIt.bind(_this);
-	    _this.deleteIt = _this.deleteIt.bind(_this);
-	    _this.handleBody = _this.handleBody.bind(_this);
-	    _this.handleTitle = _this.handleTitle.bind(_this);
-	    _this.editIt = _this.editIt.bind(_this);
-	    _this.callbackIdeas = _this.callbackIdeas.bind(_this);
-	    _this.callbackAdd = _this.callbackAdd.bind(_this);
-	    _this.callbackUpdate = _this.callbackUpdate.bind(_this);
-	    _this.callbackDelete = _this.callbackDelete.bind(_this);
-	    _this.callbackSortIt = _this.callbackSortIt.bind(_this);
-	    _this.cancelIt = _this.cancelIt.bind(_this);
-	    return _this;
+	    _this2.addIt = _this2.addIt.bind(_this2);
+	    _this2.updateIt = _this2.updateIt.bind(_this2);
+	    _this2.sortIt = _this2.sortIt.bind(_this2);
+	    _this2.deleteIt = _this2.deleteIt.bind(_this2);
+	    _this2.handleBody = _this2.handleBody.bind(_this2);
+	    _this2.handleTitle = _this2.handleTitle.bind(_this2);
+	    _this2.editIt = _this2.editIt.bind(_this2);
+	    _this2.callbackIdeas = _this2.callbackIdeas.bind(_this2);
+	    _this2.callbackAdd = _this2.callbackAdd.bind(_this2);
+	    _this2.callbackUpdate = _this2.callbackUpdate.bind(_this2);
+	    _this2.callbackDelete = _this2.callbackDelete.bind(_this2);
+	    _this2.callbackSortIt = _this2.callbackSortIt.bind(_this2);
+	    _this2.cancelIt = _this2.cancelIt.bind(_this2);
+	    return _this2;
 	  }
 	
 	  _createClass(Ideas, [{
@@ -22063,7 +22102,7 @@
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      var callbackInfo = { obj: this, callback: 'callbackIdeas' };
-	      this.http(API.list, 'GET', {}, callbackInfo);
+	      this.serverRequest = this.http(this.props.apiList, 'GET', {}, callbackInfo);
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
@@ -22090,7 +22129,7 @@
 	      _reactDom2.default.findDOMNode(this.refs.title).focus();
 	
 	      var callbackInfo = { obj: this, callback: 'callbackAdd' };
-	      this.http(API.add, 'POST', {}, callbackInfo);
+	      this.http(this.props.apiAdd, 'POST', {}, callbackInfo);
 	    }
 	  }, {
 	    key: 'callbackAdd',
@@ -22144,7 +22183,7 @@
 	      console.log(fd);
 	
 	      var callbackInfo = { obj: this, callback: 'callbackUpdate' };
-	      this.http(API.update, 'POST', fd, callbackInfo);
+	      this.http(this.props.apiUpdate, 'POST', fd, callbackInfo);
 	    }
 	  }, {
 	    key: 'callbackUpdate',
@@ -22164,7 +22203,7 @@
 	      //e.preventDefault();
 	      var id = obj._id;
 	      var callbackInfo = { obj: this, callback: 'callbackDelete' };
-	      this.http(API.del + "/" + id, 'DELETE', { id: id }, callbackInfo);
+	      this.http(this.props.apiDelete + "/" + id, 'DELETE', { id: id }, callbackInfo);
 	    }
 	  }, {
 	    key: 'callbackDelete',
@@ -22177,18 +22216,9 @@
 	      var sortBy = e.target.value;
 	
 	      this.setState({ sortBy: sortBy });
-	      var callbackInfo = { obj: this, callback: 'callbackSort' };
-	      this.http(API.list, 'GET', { sortBy: sortBy }, callbackInfo);
 	
-	      this.serverRequest = $.ajax({
-	        url: API.list,
-	        method: 'GET',
-	        data: { sortBy: sortBy },
-	        success: function (response) {
-	          //this.setState({ideas: response});
-	          this.callbackIdeas(response);
-	        }.bind(this)
-	      });
+	      var callbackInfo = { obj: this, callback: 'callbackSortIt' };
+	      this.http(this.props.apiList, 'GET', { sortBy: sortBy }, callbackInfo);
 	    }
 	  }, {
 	    key: 'callbackSortIt',
@@ -22223,37 +22253,10 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _this2 = this;
+	      var _this3 = this;
 	
-	      var ideas = this.state.ideas.map(function (i) {
-	        return _react2.default.createElement(
-	          'div',
-	          { key: i._id, className: 'keepLeft' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'panel panel-primary tileFormat tileFormatMore' },
-	            _react2.default.createElement(
-	              'button',
-	              { className: 'keepRight btn btn-xs btn-warning', value: i._id, onClick: _this2.deleteIt.bind(null, i) },
-	              'X'
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'panel-heading' },
-	              i.title
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'panel-body' },
-	              i.body
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'panel-footer cursorPointer', onClick: _this2.editIt.bind(null, i) },
-	              'Edit It'
-	            )
-	          )
-	        );
+	      var ideas = this.state.ideas.map(function (i, index) {
+	        return _react2.default.createElement(IdeasContent, { content: i, key: index, parentThis: _this3 });
 	      }, this);
 	
 	      return _react2.default.createElement(
@@ -22485,19 +22488,16 @@
 		_createClass(Common, [{
 			key: 'http',
 			value: function http(url, method, data, callbackInfo) {
-				//console.log("I am Common being called");
-	
-				this.serverRequest = $.ajax({
+				return $.ajax({
 					url: url,
 					method: method,
-					data: data,
+					data: 'GET' == method ? $.param(data) : data,
 					processData: false,
-					contentType: false,
+					contentType: false, // to consider content type for file upload
 					success: function success(response) {
-						//console.log(callbackInfo.obj, this);
-						for (var i in callbackInfo.obj) {
-							if (callbackInfo.callback == i) {
-								callbackInfo.obj[i](response);
+						for (var objAttr in callbackInfo.obj) {
+							if (callbackInfo.callback == objAttr) {
+								callbackInfo.obj[objAttr](response);
 								return;
 							}
 						};
@@ -22508,6 +22508,15 @@
 	
 		return Common;
 	}(_react2.default.Component);
+	
+	var host = "http://localhost:8081";
+	
+	Common.defaultProps = {
+		apiList: host + "/ideas",
+		apiAdd: host + "/ideas/new",
+		apiDelete: host + "/ideas/delete",
+		apiUpdate: host + "/ideas/update"
+	};
 	
 	exports.default = Common;
 

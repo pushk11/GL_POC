@@ -3,13 +3,20 @@ import Nodata from './Nodata.jsx';
 import ReactDOM from 'react-dom';
 import CommonClass from './Common.jsx';
 
-var API = {
-	list: 'http://localhost:8081/ideas',
-	add: 'http://localhost:8081/ideas/new',
-	del: 'http://localhost:8081/ideas/delete',
-	update: 'http://localhost:8081/ideas/update'
+class IdeasContent extends CommonClass {
+  render() {
+    return (
+      <div key={this.props.content._id} className="keepLeft">
+            <div className="panel panel-primary tileFormat tileFormatMore">
+              <button className="keepRight btn btn-xs btn-warning" value={this.props.content._id} onClick={this.props.parentThis.deleteIt.bind(null,this.props.content)}>X</button>
+              <div className="panel-heading">{this.props.content.title}</div>
+              <div className="panel-body">{this.props.content.body}</div>
+              <div className="panel-footer cursorPointer" onClick={this.props.parentThis.editIt.bind(null,this.props.content)}>Edit It</div>
+            </div>
+      </div>
+    );
+  }
 }
-
 
 class Ideas extends CommonClass {
    constructor(props){
@@ -56,7 +63,7 @@ class Ideas extends CommonClass {
 
   componentDidMount() {
     let callbackInfo = {obj: this, callback: 'callbackIdeas'};
-    this.http(API.list,'GET',{}, callbackInfo);
+    this.serverRequest = this.http(this.props.apiList,'GET',{}, callbackInfo);
   }
 
   componentWillUnmount() {
@@ -80,7 +87,7 @@ class Ideas extends CommonClass {
   	ReactDOM.findDOMNode(this.refs.title).focus();
 
     let callbackInfo = {obj: this, callback: 'callbackAdd'};
-    this.http(API.add,'POST', {}, callbackInfo);
+    this.http(this.props.apiAdd,'POST', {}, callbackInfo);
 
   }
 
@@ -133,7 +140,7 @@ class Ideas extends CommonClass {
    console.log(fd);
 
    let callbackInfo = {obj: this, callback: 'callbackUpdate'};
-   this.http(API.update,'POST', fd, callbackInfo);
+   this.http(this.props.apiUpdate,'POST', fd, callbackInfo);
   }
 
   callbackUpdate(response) {
@@ -151,7 +158,7 @@ class Ideas extends CommonClass {
   	//e.preventDefault();
   	var id = obj._id;
     let callbackInfo = {obj: this, callback: 'callbackDelete'};
-    this.http(API.del+"/"+id,'DELETE', {id: id}, callbackInfo);
+    this.http(this.props.apiDelete+"/"+id,'DELETE', {id: id}, callbackInfo);
   }
 
   callbackDelete(response) {
@@ -162,19 +169,10 @@ class Ideas extends CommonClass {
   	var sortBy = e.target.value;
 
   	this.setState({sortBy: sortBy});
-    let callbackInfo = {obj: this, callback: 'callbackSort'};
-    this.http(API.list,'GET', {sortBy: sortBy}, callbackInfo);
 
+    let callbackInfo = {obj: this, callback: 'callbackSortIt'};
+    this.http(this.props.apiList,'GET', {sortBy: sortBy}, callbackInfo);
 
-  	this.serverRequest = $.ajax({
-  		url: API.list,
-  		method: 'GET',
-  		data: {sortBy: sortBy},
-  		success: function(response) {
-  			//this.setState({ideas: response});
-  			this.callbackIdeas(response);
-  		}.bind(this)
-  	});
   }
 
   callbackSortIt(response) {
@@ -205,16 +203,9 @@ class Ideas extends CommonClass {
 
   render () {
 
-  	var ideas = this.state.ideas.map( (i) => {
+  	var ideas = this.state.ideas.map( (i, index) => {
   			return (
-  					<div key={i._id} className="keepLeft">
-						<div className="panel panel-primary tileFormat tileFormatMore">
-							<button className="keepRight btn btn-xs btn-warning" value={i._id} onClick={this.deleteIt.bind(null,i)}>X</button>
-							<div className="panel-heading">{i.title}</div>
-							<div className="panel-body">{i.body}</div>
-							<div className="panel-footer cursorPointer" onClick={this.editIt.bind(null,i)}>Edit It</div>
-						</div>
-    				</div>
+            <IdeasContent content={i} key={index} parentThis={this} />
   				)
   		}, this);
 

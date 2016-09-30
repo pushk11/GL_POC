@@ -6,26 +6,31 @@ class Common extends React.Component {
   }
 
   http(url, method, data, callbackInfo) {
-  	//console.log("I am Common being called");
-
-  	this.serverRequest = $.ajax({
+  	return $.ajax({
 		url: url,
 		method: method,
-		data: data,
+		data: ('GET' == method) ? $.param(data) : data,
 		processData: false,
-  		contentType: false,
+  		contentType: false, // to consider content type for file upload
 		success: function(response) {
-			//console.log(callbackInfo.obj, this);
-			for(let i in callbackInfo.obj) {
-				if (callbackInfo.callback == i) {
-				  callbackInfo.obj[i](response);
+			for(let objAttr in callbackInfo.obj) {
+				if (callbackInfo.callback == objAttr) {
+				  callbackInfo.obj[objAttr](response);
 				  return;
 				}
 			 };
-
 		}
 	});
   }
+}
+
+var host = "http://localhost:8081";
+
+Common.defaultProps = {
+   apiList: host + "/ideas",
+   apiAdd: host + "/ideas/new",
+   apiDelete: host + "/ideas/delete",
+   apiUpdate: host + "/ideas/update"
 }
 
 export default Common;
